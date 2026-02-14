@@ -6,11 +6,14 @@ Usage:
     python chess_vision.py <fen> analyze <square>
     python chess_vision.py <fen> move <from> <to>
     python chess_vision.py <fen> hanging <color>
+    python chess_vision.py <fen> tactics <color>
     python chess_vision.py <fen> board
+    python chess_vision.py <fen> all
     
 Examples:
     python chess_vision.py "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1" analyze e4
     python chess_vision.py "rnbqkbnr/pppp1ppp/8/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2" hanging black
+    python chess_vision.py "r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4" tactics white
 """
 
 import sys
@@ -18,6 +21,7 @@ import json
 from board import Board, Square, Color, sq
 from attacks import analyze_square, find_hanging_pieces, find_undefended_pieces
 from analyze_move import analyze_move, quick_check, check_all_hanging
+from tactics import tactics_summary, analyze_tactics
 
 
 def print_help():
@@ -77,6 +81,13 @@ def main():
             for sq_obj, piece in undefended:
                 print(f"  {piece} on {sq_obj}")
         
+    elif command == "tactics":
+        if len(sys.argv) < 4:
+            print("Usage: chess_vision.py <fen> tactics <white|black>")
+            return
+        color = Color.WHITE if sys.argv[3].lower() == "white" else Color.BLACK
+        print(tactics_summary(board, color))
+        
     elif command == "all":
         # Full board analysis
         print(board)
@@ -84,6 +95,10 @@ def main():
         print(check_all_hanging(board, Color.WHITE))
         print()
         print(check_all_hanging(board, Color.BLACK))
+        print()
+        print("="*50)
+        print()
+        print(tactics_summary(board, board.turn))
         
     else:
         print(f"Unknown command: {command}")
